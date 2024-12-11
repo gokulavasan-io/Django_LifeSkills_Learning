@@ -25,3 +25,5 @@ class Post(models.Model):
   
   
   
+class AboutUs(models.Model):
+    content=models.TextField()

@@ -23,7 +23,7 @@ from django.conf.urls.static import static
 handler404="myapp.views.custom404PageNotFound"
 
 urlpatterns = [
-    path("blog/",include("blog.urls")),
+    path("",include("blog.urls")),
     path('admin/', admin.site.urls),
 
 ]
