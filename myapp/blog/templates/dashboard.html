@@ -43,7 +43,7 @@
                                  <a class="btn btn-warning btn-sm" href="{% url "blog:editPost" post_id=post.id %}">Edit</a>
                                  <button class="btn btn-danger btn-sm" onclick="confirmBeforeDelete('{% url "blog:deletePost" post_id=post.id %}')">Delete</button>
                                  {% if not post.is_published %}
-                                     <a class="btn btn-success btn-sm" href="{% url "blog:editPost" post_id=post.id %}">Publish</a>
+                                     <a class="btn btn-success btn-sm" href="{% url "blog:publishPost" post_id=post.id %}">Publish</a>
                                  {% endif %}
 
                             </div>

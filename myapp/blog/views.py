@@ -7,8 +7,8 @@ from django.core.paginator import Paginator
 from .forms import ContactForm, PostForm,RegisterForm,LoginForm
 from django.contrib import messages
 from django.contrib.auth import authenticate,login as authLogin,logout as authLogout
-
-
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group
 
 #static Demo Data
 # posts=[
@@ -78,6 +78,11 @@ def register(request):
             user=form.save(commit=False) 
             user.set_password(form.cleaned_data["password"])
             user.save()
+            
+            # adding user to reader group
+            readers_group,_=Group.objects.get_or_create(name='Readers')
+            user.groups.add(readers_group)
+            
             messages.success(request,'Registration Successful. You can log in')
             return redirect("blog:login") 
             
@@ -112,7 +117,7 @@ def logout(request):
     authLogout(request)
     return redirect("blog:index")
 
-
+@login_required
 def newPost(request):
     categories=Category.objects.all()
     form=PostForm()
@@ -125,6 +130,7 @@ def newPost(request):
             return redirect("blog:dashboard")
     return render(request,"newPost.html",{"categories":categories,"form":form})
 
+@login_required
 def editPost(request,post_id):
     categories=Category.objects.all()
     post=get_object_or_404(Post,id=post_id)
@@ -137,9 +143,15 @@ def editPost(request,post_id):
     
     return render(request,'editPost.html',{"categories":categories,"post":post,'form':form})
 
+@login_required
 def deletePost(request,post_id):
     post=get_object_or_404(Post,id=post_id)
     post.delete()
     return redirect("blog:dashboard")
 
-def publish_post
+@login_required
+def publishPost(request,post_id):
+    post=get_object_or_404(Post,id=post_id)
+    post.is_published=True
+    post.save()
+    return redirect("blog:dashboard")
