@@ -40,7 +40,7 @@ class PostForm(forms.ModelForm):
     
     class Meta:
         model=Post
-        fields=["title","content","category","img_url"]
+        fields=["title","content","category"]
         
     def clean(self):
         cleaned_data= super().clean()
@@ -54,13 +54,6 @@ class PostForm(forms.ModelForm):
             
     def save(self, commit = ...):
         post= super().save(commit)
-        cleaned_data=super().clean()
-        
-        if cleaned_data.get("img_url"):
-            post.img_url=cleaned_data.get("img_url")
-        else:        
-            img_url='https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/450px-No_image_available.svg.png'
-            post.img_url=img_url
         
         if commit:
             post.save()

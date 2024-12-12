@@ -7,7 +7,7 @@ from django.core.paginator import Paginator
 from .forms import ContactForm, PostForm,RegisterForm,LoginForm
 from django.contrib import messages
 from django.contrib.auth import authenticate,login as authLogin,logout as authLogout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required,permission_required
 from django.contrib.auth.models import Group
 
 #static Demo Data
@@ -22,19 +22,19 @@ from django.contrib.auth.models import Group
 def index(request):
     blog_title="Latest Post"
     
-    allPosts=Post.objects.all().filter(is_published=True)
-    paginator=Paginator(allPosts,5)
+    allPosts = Post.objects.filter(is_published=True).order_by('createdAt') 
+    paginator = Paginator(allPosts, 9)
     pageNumber=request.GET.get("page")
     pageOption=paginator.get_page(pageNumber)
     
     
     return render(request,"index.html",{"blog_title":blog_title,"pageOption":pageOption})
 
+@permission_required('blog.view_post',raise_exception=True)
 def detail(request,slug):
-    #static data
-    # post=next((item for item in posts if item["id"]==int(post_id) ),None)
-    # logger=logging.getLogger("TESTING")
-    # logger.debug(f"post variable is {post}")
+ 
+    if request.user and not request.user.has_perm('blog.view_post'):
+        return redirect('blog:index')
     
     try:
         post= Post.objects.get(slug=slug)
@@ -107,8 +107,8 @@ def login(request):
 
 def dashboard(request):
     blogTitle="My Posts"
-    allPosts=Post.objects.filter(user=request.user)    
-    paginator=Paginator(allPosts,5)
+    allPosts = Post.objects.filter(user=request.user).order_by('createdAt')  
+    paginator = Paginator(allPosts, 9)
     pageNumber=request.GET.get("page")
     pageOption=paginator.get_page(pageNumber)
     return render(request,"dashboard.html",{"blogTitle":blogTitle,"pageOption":pageOption})
@@ -118,11 +118,12 @@ def logout(request):
     return redirect("blog:index")
 
 @login_required
+@permission_required('blog.add_post',raise_exception=True)
 def newPost(request):
     categories=Category.objects.all()
     form=PostForm()
     if request.method=="POST":
-        form=PostForm(request.POST,request.FILES)
+        form=PostForm(request.POST)
         if form.is_valid():
             post=form.save(commit=False)
             post.user=request.user
@@ -131,12 +132,14 @@ def newPost(request):
     return render(request,"newPost.html",{"categories":categories,"form":form})
 
 @login_required
+@permission_required('blog.change_post',raise_exception=True)
+
 def editPost(request,post_id):
     categories=Category.objects.all()
     post=get_object_or_404(Post,id=post_id)
     form=PostForm()
     if request.method=="POST":
-        form=PostForm(request.POST,request.FILES,instance=post)
+        form=PostForm(request.POST,instance=post)
         if form.is_valid():
             form.save()
             return redirect('blog:dashboard')
@@ -144,12 +147,15 @@ def editPost(request,post_id):
     return render(request,'editPost.html',{"categories":categories,"post":post,'form':form})
 
 @login_required
+@permission_required('blog.delete_post',raise_exception=True)
 def deletePost(request,post_id):
     post=get_object_or_404(Post,id=post_id)
     post.delete()
     return redirect("blog:dashboard")
 
+
 @login_required
+@permission_required('blog.can_publish',raise_exception=True)
 def publishPost(request,post_id):
     post=get_object_or_404(Post,id=post_id)
     post.is_published=True

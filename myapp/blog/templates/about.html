@@ -1,12 +1,20 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %} 
 
-<div class="container-fluid">
-  <h3>About Us</h3>
-  <div class="d-flex gap-3 justify-content-center mt-5">
-    <img src="https://picsum.photos/300/300" alt="" />
-    <div class="content">
-        {{aboutUsContent}}
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold">About Us</h2>
+        <p class="text-muted">Get to know more about who we are and what we do.</p>
     </div>
-  </div>
+
+    <div class="row align-items-center">
+        <div class="col-md-7">
+            <div class="content p-3">
+                <p class="fs-5 text-muted">
+                    {{ aboutUsContent }}
+                </p>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock content %}
